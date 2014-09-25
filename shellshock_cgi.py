@@ -42,10 +42,6 @@ def text_attack(url, request_type="GET", data=None, headers=None):
     return needle in response.read()
 
 
-def start_server():
-     pass
-    
-
 if __name__ == '__main__':
     import sys
     if len(sys.argv) < 2:
