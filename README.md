@@ -11,4 +11,13 @@ Do not run this script inside folders cotaining files names "echo", as it wil de
 
 
 - shellshock_cgi.py
-  *Work in progress* Alternative: https://github.com/scottjpack/shellshock_scanner
+  Test if a cgi script is vulnerable.
+  USAGE:
+    - ./shellshock_cgi.py url1 url2 url3
+    - cat somefile | ./shellshock_cgi.py
+  ATM. only suports GET requests and deliver the exploit in the User_Agent. This could be changed in a short amount of     time, though.
+It runs two tests:
+ - text_attack: Tries to inject a known text into the result. Succesfull if the cgis STDOUT is returned as response.
+ - timing attack: Tries to inject a call to sleep.
+
+EXAMPLE:
