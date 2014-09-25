@@ -23,7 +23,7 @@ It runs two tests:
 ATM. only suports GET requests and deliver the exploit in the User_Agent. This could be changed in a short amount of time, though.
 
 EXAMPLE:
-'''
+```
 user@host:~/workspace/security/shellshock$ ./shellshock_cgi.py http://localhost/index.html http://localhost/lol.php
 - testing: http://localhost/index.html
 Timing attack vulnerable: False
@@ -32,4 +32,4 @@ Known text attack vulnerable: False
 - testing: http://localhost/lol.php
 Timing attack vulnerable: True
 Known text attack vulnerable: True
-'''
+```
