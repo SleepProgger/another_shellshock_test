@@ -3,9 +3,9 @@ another_shellshock_test
 
 Some scripts to test for the "ShellShock" vulnerability (CVE-2014-6271).
 
-The codename for this scripts is SHIT (SHellshock Injection Test) *harrharr.
+The codename for this scripts is SHIT (SHellshock Injection Test) *harrharr*.
 
-*Please only use this script in environments where you are allowed to. *
+*Please only use this script in environments where you are allowed to.*
 
 
 ## shellshock_local.sh
@@ -60,52 +60,54 @@ I only tested with dhclient so far, but it should work with every dhcp client in
 
 EXAMPLE:
 - Only listen for two given MAC addresses (use the data supplied by the real dhcp server):  
-./shellshock_dhcp.pyshellshock_dhcp.py -w 08:00:27:09:84:a9 05:01:27:19:84:e9  
+./shellshock_dhcp.pyshellshock_dhcp.py -w 08:00:27:09:84:a9 05:01:27:19:84:e9 -i eth0
 
-- Use the script without a real dhcp server. OFC you'll have to supply al needed values.  
-./shellshock_dhcp.pyshellshock_dhcp.py --static-data --gateway 192.168.100.152 --server-ip 192.168.0.1 --subnet-mask 255.255.255.0 -o 80  
+- Use the script without a real dhcp server. OFC you'll have to supply all needed values.  
+./shellshock_dhcp.pyshellshock_dhcp.py --static-data --gateway 192.168.100.152 --server-ip 192.168.0.1 --subnet-mask 255.255.255.0 -o 80 -i eth0
   
-  
-USAGE:
-    usage: dhcp.py [-h] [-i INTERFACE] [-b MAC [MAC ...]] [-w MAC [MAC ...]] [-s]
-                   [--ip IP] [--dns-server DNS_SERVER] [--gateway GATEWAY]
-                   [--subnet-mask SUBNET_MASK] [--mac MAC] [--server-ip SERVER_IP]
-                   [-l LEASE] [-c COMMAND] [-o OPTION]
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      -i INTERFACE, --interface INTERFACE
-                            Use the given interface for sniffing and sending.
-      -b MAC [MAC ...], --blacklist MAC [MAC ...]
-                            Never react to package from given MAC.
-      -w MAC [MAC ...], --whitelist MAC [MAC ...]
-                            Only react to packages from given MAC.
-      -s, --static-data     If given no dhcp request is done to get the settings.
-                            If used --gateway, --dns-server and --subnet-mask
-                            should be supplied.
-      --ip IP               If given send this IP to the client(s) on DISCOVER.
-      --dns-server DNS_SERVER
-                            If given send this DNS server IP to the client(s) on
-                            DISCOVER and REQUEST.
-      --gateway GATEWAY     If given send this gateway IP to the client(s) on
-                            DISCOVER and REQUEST.
-      --subnet-mask SUBNET_MASK
-                            If given send this subnet mask to the client(s) on
-                            DISCOVER and REQUEST.
-      --mac MAC             Use the given MAC address if not supplied by client.
-                            If not given we use the mac from the real server, or a
-                            random random one (if --static-data is given)..
-      --server-ip SERVER_IP
-                            Use the given IP address if not supplied by client. If
-                            not given we use the IP from the real server, or a
-                            random random one (if --static-data is given)..
-      -l LEASE, --lease LEASE
-                            Lease time to use.
-      -c COMMAND, --command COMMAND
-                            The command to execute on the client machine.
-      -o OPTION, --option OPTION
-                            The option flag to use for the payload.
+```
+usage: shellshock_dhcp.py [-h] -i INTERFACE [-b MAC [MAC ...]]
+                          [-w MAC [MAC ...]] [-s] [--ip IP]
+                          [--dns-server DNS_SERVER] [--gateway GATEWAY]
+                          [--subnet-mask SUBNET_MASK] [--mac MAC]
+                          [--server-ip SERVER_IP] [-l LEASE] [-c COMMAND]
+                          [-o OPTION]
 
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INTERFACE, --interface INTERFACE
+                        Use the given interface for sniffing and sending.
+  -b MAC [MAC ...], --blacklist MAC [MAC ...]
+                        Never react to package from given MAC.
+  -w MAC [MAC ...], --whitelist MAC [MAC ...]
+                        Only react to packages from given MAC.
+  -s, --static-data     If given no dhcp request is done to get the settings.
+                        If used --gateway and --subnet-mask should be
+                        supplied.
+  --ip IP               If given send this IP to the client(s) on DISCOVER.
+  --dns-server DNS_SERVER
+                        If given send this DNS server IP to the client(s) on
+                        DISCOVER and REQUEST.
+  --gateway GATEWAY     If given send this gateway IP to the client(s) on
+                        DISCOVER and REQUEST.
+  --subnet-mask SUBNET_MASK
+                        If given send this subnet mask to the client(s) on
+                        DISCOVER and REQUEST.
+  --mac MAC             Use the given MAC address if not supplied by client.
+                        If not given we use the mac from the real server, or a
+                        random random one (if --static-data is given)..
+  --server-ip SERVER_IP
+                        Use the given IP address if not supplied by client. If
+                        not given we use the IP from the real server, or a
+                        random random one (if --static-data is given)..
+  -l LEASE, --lease LEASE
+                        Lease time to use.
+  -c COMMAND, --command COMMAND
+                        The command to execute on the client machine.
+  -o OPTION, --option OPTION
+                        The option flag to use for the payload.
+```
 
 INSTALL:
 You will need python 2.7 and scapy (apt-get install scapy).  
@@ -123,15 +125,15 @@ Only works with IPv4 addresses ATM.
  
 
 *Working (at least on my test system) options which allow strings as data and get passed to the dhclient scripts:*
-114  
-242  
-80  
-133  
-137  
-83  
-195  
-250  
-224  
-108  
-163  
-174
+- 114
+- 242  
+- 80  
+- 133  
+- 137  
+- 83  
+- 195  
+- 250  
+- 224  
+- 108  
+- 163  
+- 174
