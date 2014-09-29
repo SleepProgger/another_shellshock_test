@@ -13,6 +13,7 @@ Test for the two known (by me) version of this vulnerability on the local system
 - env x='() { :;}; echo vulnerable' bash -c echo;
 - rm -f echo; env X='() { (a)=>\' bash -c "echo echo vulnerable" 2>/dev/null; cat echo
 ! THIS SCRIPT WILL REMOVE ANY FILE NAMED echo IN THE CURRENT DIRECTORY. (Sorry for that)
+
 A better script for this purpose is located here: https://github.com/hannob/bashcheck
 
 ## shellshock_cgi.py
