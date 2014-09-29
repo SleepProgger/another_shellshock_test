@@ -2,7 +2,9 @@ another_shellshock_test
 =======================
 
 Some scripts to test for the "ShellShock" vulnerability (CVE-2014-6271).
+
 The codename for this scripts is SHIT (SHellshock Injection Test) *harrharr.
+
 *Please only use this script in environments where you are allowed to. *
 
 
@@ -119,7 +121,7 @@ Only works with IPv4 addresses ATM.
  
  
 
-*Working (at least on my test system) options which allow strings as data and get passed to the dhclient scripts:
+*Working (at least on my test system) options which allow strings as data and get passed to the dhclient scripts:*
 114  
 242  
 80  
